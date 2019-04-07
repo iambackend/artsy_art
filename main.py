@@ -12,9 +12,9 @@ class Organism:
         for x in range(block_size):
             for y in range(block_size):
                 orig = img.getpixel((x, y))
-                # paro = parody.getpixel((x, y))
+                paro = parody.getpixel((x, y))
                 # print(orig, paro)
-                fatness += abs(img.getpixel((x, y)) - parody.getpixel((x, y)))
+                fatness += abs(orig[0] - paro[0])**2 + abs(orig[1] - paro[1])**2 + abs(orig[2] - paro[2])**2
         return fatness
 
     def __init__(self, x, y, tilt, first_colour, second_colour):
@@ -22,25 +22,36 @@ class Organism:
 
     @classmethod
     def random(cls):
-        return cls(randrange(block_size), randrange(block_size), uniform(-pi, pi), randrange(0, 255), randrange(0, 255))
+        return cls(randrange(block_size), randrange(block_size), uniform(-pi, pi),
+                   (randrange(0, 255), randrange(0, 255), randrange(0, 255)),
+                   (randrange(0, 255), randrange(0, 255), randrange(0, 255)))
 
     def mutate(self):
         self.x += randrange(-2, 2)
         self.y += randrange(-2, 2)
         self.tilt += gauss(0, -0.3)
-        self.first_colour += bound(randrange(-10, 10), 0, 255)
-        self.second_colour += bound(randrange(-10, 10), 0, 255)
+        self.first_colour = (bound(self.first_colour[0] + randrange(-10, 10), 0, 255),
+                             bound(self.first_colour[1] + randrange(-10, 10), 0, 255),
+                             bound(self.first_colour[2] + randrange(-10, 10), 0, 255))
+        self.second_colour = (bound(self.second_colour[0] + randrange(-10, 10), 0, 255),
+                              bound(self.second_colour[1] + randrange(-10, 10), 0, 255),
+                              bound(self.second_colour[2] + randrange(-10, 10), 0, 255))
         return self
 
     @staticmethod
     def crossover(a, b):
         prop = uniform(0.3, 0.7)
         return Organism(prop * a.x + (1-prop) * b.x, prop * a.y + (1-prop) * b.y, prop * a.tilt + (1-prop) * b.tilt,
-                        int(prop * a.first_colour + (1-prop) * b.first_colour), int(prop * a.second_colour + (1-prop) * b.second_colour))
+                        (int(prop * a.first_colour[0] + (1-prop) * b.first_colour[0]),
+                         int(prop * a.first_colour[1] + (1 - prop) * b.first_colour[1]),
+                         int(prop * a.first_colour[2] + (1 - prop) * b.first_colour[2])),
+                        (int(prop * a.second_colour[0] + (1 - prop) * b.second_colour[0]),
+                         int(prop * a.second_colour[1] + (1 - prop) * b.second_colour[1]),
+                         int(prop * a.second_colour[2] + (1 - prop) * b.second_colour[2])))
 
     def paint(self):
         # print(self.first_colour)
-        img = Image.new('L', (block_size, block_size), color=self.first_colour)
+        img = Image.new('RGB', (block_size, block_size), color=self.first_colour)
         draw = ImageDraw.Draw(img)
         if 0.5 * pi < self.tilt < 1.5 * pi:
             draw.polygon([(-10000000, -10000000), (self.x - cos(self.tilt) * 10000, self.y - sin(self.tilt) * 10000),
@@ -88,7 +99,7 @@ block_size = int(sys.argv[2])
 population_size = int(sys.argv[3])
 generations = int(sys.argv[4])
 
-im = Image.open("images/" + image_path).convert('L')
+im = Image.open("images/" + image_path).convert('RGB')
 (width, height) = im.size
 # enhancer = ImageEnhance.Color(im)
 # im = enhancer.enhance(200000)
@@ -100,7 +111,7 @@ im.show()
 
 etalon = [[im.crop((x, y, x + block_size, y + block_size)) for y in range(0, height, block_size)] for x in range(0, width, block_size)]
 
-result = Image.new('L', (width, height))
+result = Image.new('RGB', (width, height))
 # result.save("results/lenna_1_32.png", "PNG")
 for i in range(0, width // block_size):
     for j in range(0, height // block_size):
@@ -110,7 +121,7 @@ for i in range(0, width // block_size):
         result.show()
 
 result.show()
-result.save("results/" + str(block_size) + "_" + str(population_size) + "_" + str(generations) + "_" + image_path)
+result.save("results/RGB_z" + str(block_size) + "_" + str(population_size) + "_" + str(generations) + "_" + image_path)
 
 # for x in range(0, height // FRAME_SIZE):
 #     for y in range(0, width // FRAME_SIZE):
