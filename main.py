@@ -102,7 +102,7 @@ block_size = int(sys.argv[2])
 population_size = int(sys.argv[3])
 generations = int(sys.argv[4])
 
-image_path = "avatar.jpg"
+# image_path = "avatar.jpg"
 
 im = Image.open("images/" + image_path).convert('RGB')
 (width, height) = im.size
@@ -117,7 +117,7 @@ def solver(orig):
 
 
 from multiprocessing import Pool
-with Pool(height // block_size) as p:
+with Pool(4) as p:
     for i in range(0, width // block_size):
         resultt = p.map(solver, etalon[i])
         for j in range(0, height // block_size):
@@ -126,7 +126,7 @@ with Pool(height // block_size) as p:
         # result.show()
 
 result.show()
-result.save("results/RGB0.3_" + str(block_size) + "_" + str(population_size) + "_" + str(generations) + "_" + image_path)
+result.save("results/RGB0.4_" + str(block_size) + "_" + str(population_size) + "_" + str(generations) + "_" + image_path)
 
 
 
