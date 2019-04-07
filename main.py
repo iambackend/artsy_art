@@ -28,7 +28,7 @@ class Organism:
     def mutate(self):
         self.x = bound(self.x + randrange(-2, 2), -2, block_size + 2)
         self.y = bound(self.y + randrange(-2, 2), -2, block_size + 2)
-        self.tilt = bound(self.tilt + gauss(0, -0.3), 0, 2*pi)
+        self.tilt = (self.tilt + gauss(0, 0.3)) % 2*pi
         self.first_colour = (bound(self.first_colour[0] + randrange(-10, 10), 0, 255),
                              bound(self.first_colour[1] + randrange(-10, 10), 0, 255),
                              bound(self.first_colour[2] + randrange(-10, 10), 0, 255))
@@ -102,7 +102,7 @@ block_size = int(sys.argv[2])
 population_size = int(sys.argv[3])
 generations = int(sys.argv[4])
 
-# image_path = "avatar.jpg"
+# image_path = "f81.jpg"
 
 im = Image.open("images/" + image_path).convert('RGB')
 (width, height) = im.size
