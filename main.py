@@ -2,8 +2,6 @@ from PIL import Image, ImageDraw, ImageEnhance
 from math import *
 from random import *
 
-FRAME_SIZE = 32
-
 def bound(x, a, b):
     return max(min(x, b), a)
 
@@ -11,8 +9,8 @@ class Organism:
     def fatness(self, img):
         parody = self.paint()
         fatness = 0
-        for x in range(FRAME_SIZE):
-            for y in range(FRAME_SIZE):
+        for x in range(block_size):
+            for y in range(block_size):
                 orig = img.getpixel((x, y))
                 # paro = parody.getpixel((x, y))
                 # print(orig, paro)
@@ -24,7 +22,7 @@ class Organism:
 
     @classmethod
     def random(cls):
-        return cls(randrange(FRAME_SIZE), randrange(FRAME_SIZE), uniform(-pi, pi), randrange(0, 255), randrange(0, 255))
+        return cls(randrange(block_size), randrange(block_size), uniform(-pi, pi), randrange(0, 255), randrange(0, 255))
 
     def mutate(self):
         self.x += randrange(-2, 2)
@@ -42,7 +40,7 @@ class Organism:
 
     def paint(self):
         # print(self.first_colour)
-        img = Image.new('L', (FRAME_SIZE, FRAME_SIZE), color=self.first_colour)
+        img = Image.new('L', (block_size, block_size), color=self.first_colour)
         draw = ImageDraw.Draw(img)
         if 0.5 * pi < self.tilt < 1.5 * pi:
             draw.polygon([(-10000000, -10000000), (self.x - cos(self.tilt) * 10000, self.y - sin(self.tilt) * 10000),
@@ -58,11 +56,11 @@ class Population:
     def __init__(self, img):
         self.img = img
 
-    def solve(self, size, period):
+    def solve(self, size, generations):
         population = [Organism.random() for i in range(size)]
         sorted(population, key=lambda organism: organism.fatness(self.img))
         # self.img.show()
-        for epoch in range(period):
+        for epoch in range(generations):
             for i in range(0, size // 3):
                 population[i + size // 3] = Organism.crossover(population[i], population[i + 1]).mutate()
             for i in range(size // 3 * 2, size):
@@ -73,7 +71,24 @@ class Population:
             #     population[0].paint().show()
         return population[0].paint()
 
-im = Image.open("images/image10.jpg").convert('L')
+import sys
+
+if len(sys.argv) != 5:
+    print("You are dumbass, run program in following format:\n"
+          "python3 main.py image_path size_of_block population_size generations\n"
+          "I recommend you following parameters:\n"
+          "image_path: name of file in images directory, otherwise it will not work"
+          "size_of_block: 8/16/32, 1 will be just extremly slow convertion to bw\n"
+          "population: 10 is ok, never tried other values\n"
+          "generations: 10-30 is ok\n")
+    sys.exit(-1)
+
+image_path = sys.argv[1]
+block_size = int(sys.argv[2])
+population_size = int(sys.argv[3])
+generations = int(sys.argv[4])
+
+im = Image.open("images/" + image_path).convert('L')
 (width, height) = im.size
 # enhancer = ImageEnhance.Color(im)
 # im = enhancer.enhance(200000)
@@ -83,19 +98,19 @@ im = Image.open("images/image10.jpg").convert('L')
 # im = enhancer.enhance(0.1)
 im.show()
 
-etalon = [[im.crop((x, y, x + FRAME_SIZE, y + FRAME_SIZE)).convert('L') for y in range(0, height, FRAME_SIZE)] for x in range(0, width, FRAME_SIZE)]
+etalon = [[im.crop((x, y, x + block_size, y + block_size)) for y in range(0, height, block_size)] for x in range(0, width, block_size)]
 
 result = Image.new('L', (width, height))
 # result.save("results/lenna_1_32.png", "PNG")
-for i in range(0, width // FRAME_SIZE):
-    for j in range(0, height // FRAME_SIZE):
+for i in range(0, width // block_size):
+    for j in range(0, height // block_size):
         pop = Population(etalon[i][j])
-        result.paste(pop.solve(10, 30), (i * FRAME_SIZE, j * FRAME_SIZE, (i + 1) * FRAME_SIZE, (j + 1) * FRAME_SIZE))
-    if i % (width // FRAME_SIZE // 8) == 0:
+        result.paste(pop.solve(population_size, generations), (i * block_size, j * block_size, (i + 1) * block_size, (j + 1) * block_size))
+    if i % (width // block_size // 8) == 0:
         result.show()
 
 result.show()
-result.save("results/result.png", "PNG")
+result.save("results/" + str(block_size) + "_" + str(population_size) + "_" + str(generations) + "_" + image_path)
 
 # for x in range(0, height // FRAME_SIZE):
 #     for y in range(0, width // FRAME_SIZE):
