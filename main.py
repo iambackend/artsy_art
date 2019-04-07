@@ -24,7 +24,7 @@ class Organism:
     def mutate(self):
         self.x = bound(self.x + randrange(-2, 2), -2, block_size + 2)
         self.y = bound(self.y + randrange(-2, 2), -2, block_size + 2)
-        self.tilt = bound(self.tilt + gauss(0, -0.3), 0, 2 * pi)
+        self.tilt = (self.tilt + gauss(0, 0.3)) % 2*pi
         self.first_colour += bound(randrange(-10, 10), 0, 255)
         self.second_colour += bound(randrange(-10, 10), 0, 255)
         return self
