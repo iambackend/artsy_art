@@ -102,7 +102,7 @@ block_size = int(sys.argv[2])
 population_size = int(sys.argv[3])
 generations = int(sys.argv[4])
 
-# image_path = "rael.png"
+# image_path = "len_full.jpg"
 
 im = Image.open("images/" + image_path).convert('RGB')
 (width, height) = im.size
