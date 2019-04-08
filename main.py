@@ -65,7 +65,7 @@ class Population:
 import sys
 
 if len(sys.argv) != 5:
-    print("You are dumbass, run program in following format:\n"
+    print("You are not very smart person, run program in following format:\n"
           "python3 main.py image_path size_of_block population_size generations\n"
           "I recommend you following parameters:\n"
           "image_path: name of file in images directory, otherwise it will not work"
